@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    .mainContainer {
+        background-color: black;
+    }
+
+    .subContainer {
+        height: 100%;
+        /* margin: 0 100px 0 100px; */
+        background-color: white;
+        padding: 16px 16px 16px 16px;
+    }
+
+    .container {
+        width: 300px;
+        height: 150px;
+        background-color: rgb(206, 171, 106);
+        margin: 16px 16px 16px 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #title {
+        width: 200px;
+        /* margin: 10px 0 10px 10px; */
+        padding: 10px;
+        border: 2px solid black;
+    }
+
+    #status {
+        /* margin: 10px 0 10px 10px; */
+        width: 20px;
+        height: 20px;
+        margin: 10px;
+        border: 2px solid black;
+    }
+
+    #error-title {
+        padding-top: 5px;
+        color: red;
+    }
+
+    #submit {
+        width: 150px;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: black;
+        color: white;
+    }
+
+    #submit:hover {
+        background-color: rgb(63, 55, 55);
+        cursor: pointer;
+    }
+
+    #card {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        column-gap: 10px;
+        row-gap: 10px;
+    }
+
+    #card div {
+        margin: 10px 10px;
+        width: 200px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgb(206, 171, 106);
+    }
+
+    #card p {
+        color: green;
+        font-size: 20px;
+    }
+</style>
+
+<body>
+    <div class="mainContainer">
+        <div class="subContainer">
+            <div class="container">
+                <form id="form">
+                    <div style="display: flex; flex-direction: row;">
+                        <div style="height: 50px;">
+                            <input type="text" id="title" placeholder="Add Title" name="title" onfocus="onFocus()">
+                            <p id="error-title"></p>
+                        </div>
+                        <input type="checkbox" id="status" name="status">
+                    </div>
+                    <input type="submit" id="submit" value="Add" onclick="onSubmit()">
+                </form>
+            </div>
+            <div id="card"></div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    refresh();
+    function refresh() {
+        fetch('https://json-server-mocker-masai.herokuapp.com/tasks')
+            .then(response =>
+                response.json()
+            )  // convert to json
+            .then(json =>
+                appendTodo(json)
+            )    //print data to console
+            .catch(err =>
+                console.log('Request Failed', err)
+            ); // Catch errors
+    }
+
+    function appendTodo(cart) {
+        console.log(cart)
+        cart.forEach(function (el) {
+            if (el.title !== undefined || el.title !== false) {
+                var div = document.createElement('div')
+                var title = document.createElement('p')
+                if (el.status === false) {
+                    title.style.color = 'red';
+                }
+                title.innerText = el.title;
+                div.append(title)
+                card.append(div)
+            }
+        })
+    }
+
+    function onFocus() {
+        document.getElementById('error-title').innerHTML = '';
+    }
+
+    function onSubmit() {
+        event.preventDefault();
+        let a = document.getElementById('title').value;
+        let b = document.getElementById('status').checked;
+        let _data = {
+            "title": a,
+            "status": b
+        };
+        if (a.length === 0) {
+            document.getElementById('error-title').innerHTML = 'Please enter the title';
+            return;
+        }
+        fetch("https://json-server-mocker-masai.herokuapp.com/tasks", {
+            method: "POST",
+            body: JSON.stringify(_data),
+            headers: { "Content-type": "application/json; charset=UTF-8" },
+        })
+            .then((response) =>
+                response.json()
+            )
+            .then((json) =>
+                refresh()
+            )
+            .catch((err) =>
+                console.log(err)
+            );
+    }
+</script>
